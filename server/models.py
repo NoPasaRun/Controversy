@@ -59,7 +59,8 @@ class Product(models.Model):
         auto_created=True 
     ) 
     sizes = models.ManyToManyField( 
-        verbose_name='Доступные размеры' 
+        verbose_name='Доступные размеры',
+        to=Size
     ) 
     quantity = models.PositiveSmallIntegerField( 
         verbose_name='Осталось на складе' 
@@ -77,7 +78,7 @@ class Order(models.Model):
  
     user = models.ForeignKey( 
         'User', 
-        verbose_namne='Заказчик', 
+        verbose_name='Заказчик', 
         on_delete=models.CASCADE 
     ) 
  
