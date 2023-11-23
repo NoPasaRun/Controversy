@@ -32,25 +32,24 @@ class Size(models.Model):
  
     @property 
     def name(self): 
-        match str(self.number):
-            case '38':
-                return 'XXS'
-            case '40':
-                return 'XS'
-            case '42':
-                return 'S'
-            case size if re.match(r"[44-46]"):
-                return 'M'
-            case size if re.match(r"[48-50]"):
-                return 'L'
-            case '52':
-                return 'XL'
-            case size if re.match(r"[54-56]"):
-                return 'XXL'
-            case '58':
-                return '3XL'
-            case _:
-                return 'Размер не подходит под Американские стандарты'
+        if self.number == 38:
+            return 'XXS'
+        elif self.number == 40:
+            return 'XS'
+        elif self.number == 42:
+            return 'S'
+        elif self.number in [44, 45, 46]:
+            return 'M'
+        elif self.number in [48, 49, 50]:
+            return 'L'
+        elif self.number == '52':
+            return 'XL'
+        elif self.number in [54, 55, 56]:
+            return 'XXL'
+        elif self.number == '58':
+            return '3XL'
+        else:
+            return None
      
     def __str__(self): 
         return str(self.number) 
@@ -68,7 +67,7 @@ class Product(models.Model):
     ) 
     image = models.FileField( 
         verbose_name='Изображение', 
-        upload_to='images/product' 
+        upload_to='images' 
     ) 
     description = models.TextField( 
         verbose_name='Описание' 
