@@ -2,58 +2,8 @@
 {% load static %}
 {% block main %}
   <div class="Middle">
-    <div class="Section">
-      <div class="wrap">
-        <div class="BannersHome"><a class="BannersHomeBlock" href="#">
-            <div class="BannersHomeBlock-row">
-              <div class="BannersHomeBlock-block">
-                <strong class="BannersHomeBlock-title">Video Cards
-                </strong>
-                <div class="BannersHomeBlock-content">from&#32;<span class="BannersHomeBlock-price">$199.00</span>
-                </div>
-              </div>
-              <div class="BannersHomeBlock-block">
-                <div class="BannersHomeBlock-img"><img src="{% static 'assets/img/content/home/videoca.png' %}" alt="videoca.png"/>
-                </div>
-              </div>
-            </div></a><a class="BannersHomeBlock" href="#">
-            <div class="BannersHomeBlock-row">
-              <div class="BannersHomeBlock-block">
-                <strong class="BannersHomeBlock-title">Head Phones
-                </strong>
-                <div class="BannersHomeBlock-content">from&#32;<span class="BannersHomeBlock-price">$210.00</span>
-                </div>
-              </div>
-              <div class="BannersHomeBlock-block">
-                <div class="BannersHomeBlock-img"><img src="{% static 'assets/img/content/home/videoca.png' %}" alt="videoca.png"/>
-                </div>
-              </div>
-            </div></a><a class="BannersHomeBlock" href="#">
-            <div class="BannersHomeBlock-row">
-              <div class="BannersHomeBlock-block">
-                <strong class="BannersHomeBlock-title">Bass Speakers
-                </strong>
-                <div class="BannersHomeBlock-content">from&#32;<span class="BannersHomeBlock-price">$159.00</span>
-                </div>
-              </div>
-              <div class="BannersHomeBlock-block">
-                <div class="BannersHomeBlock-img"><img src="{% static 'assets/img/content/home/videoca.png' %}" alt="videoca.png"/>
-                </div>
-              </div>
-            </div></a>
-        </div>
-      </div>
-    </div>
     <div class="Section Section_column Section_columnLeft Section_columnDesktop">
       <div class="wrap">
-        <div class="Section-column">
-          <div class="Section-columnSection Section-columnSection_mark">
-            <header class="Section-columnHeader">
-              <strong class="Section-columnTitle">Limited Deals
-              </strong>
-            </header>
-          </div>
-        </div>
         <div class="Section-content">
           <header class="Section-header">
             <h2 class="Section-title">Popular Products
@@ -141,27 +91,6 @@
                 <p class="media-text">Best guaranted items
                 </p>
               </div>
-            </div>
-          </div>
-        </div>
-        <div class="Section-content">
-          <div class="Slider Slider_carousel">
-            <header class="Section-header Section-header_close">
-              <h2 class="Section-title">Limited edition
-              </h2>
-              <div class="Section-control">
-                <div class="Slider-navigate">
-                </div>
-              </div>
-            </header>
-            <div class="Slider-box Cards">
-              {% for seller_product in products %}
-                <div class="Slider-item">
-                  <div class="Slider-content">
-                    {% include 'card.html' %}
-                  </div>
-                </div>
-              {% endfor %}
             </div>
           </div>
         </div>
