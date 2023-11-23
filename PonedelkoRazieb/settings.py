@@ -109,6 +109,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "ru-RU"
 
+CART_SESSION_ID = "cart"
+
 TIME_ZONE = "Europe/Moscow"
 
 USE_I18N = True

@@ -1,24 +1,27 @@
-from django.shortcuts import render
+import json
+from typing import Callable
+
+from django.db import transaction
+from django.urls import reverse
 from django.views.generic import TemplateView
 
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
-from django.utils.translation import gettext_lazy as _
 from django.views import View
-from django.views.generic import ListView
 
-from models import User
+from server.models import User, Product
 from server.forms import UserUpdateForm, UserForm
+from server.cart import Cart
 
 
 class AccountView(LoginRequiredMixin, View):
 
     def get(self, request):
         context = {
-            'profile': get_object_or_404(User, user=request.user)
+            'user': get_object_or_404(User, username=request.user.username)
         }
         return render(request, "user_app/account.html", context)
 
@@ -34,34 +37,35 @@ class LogOut(LogoutView):
 class SignUp(View):
 
     def get(self, request):
-        user_form = UserForm()
         return render(
             request,
-            'user_app/register.html',
-            {"user_form": user_form, "profile_form": user_form}
+            'user_app/register.html'
         )
 
     def post(self, request):
         user_form = UserForm(request.POST)
-        if user_form.is_valid() and user_form.is_valid():
-            user = user_form.save()
-            User(**user_form.cleaned_data).save()
-            auth_user = authenticate(user=user, password=user_form["password1"])
+        if user_form.is_valid():
+            username, password = user_form.cleaned_data["username"], user_form.cleaned_data["password1"]
+            user = User(username=username)
+            user.set_password(password)
+            user.save()
+            auth_user = authenticate(user=user, password=password)
             login(request=request, user=auth_user)
-            return HttpResponseRedirect("/account/profile/", status=201)
+            return HttpResponseRedirect(reverse("account"))
+        errors = list(map(lambda item: item[0], user_form.errors.values()))
         return render(
             request,
             'user_app/register.html',
-            {"user_form": user_form, "profile_form": user_form}
+            {"user_form": user_form, "errors": errors}
         )
 
 
 class UpdateProfileInfo(View, LoginRequiredMixin):
 
     def get(self, request):
-        profile = get_object_or_404(User, pk=request.user.profile.id)
-        template_name = "user_app/profile.html" if not request.htmx else "user_app/includes/profile_section.html"
-        return render(request, template_name, {"profile": profile})
+        user = get_object_or_404(User, pk=request.user.id)
+        template_name = "user_app/profile.html"
+        return render(request, template_name, {"user": user})
 
     def post(self, request):
         user = get_object_or_404(User, pk=request.user.profile.id)
@@ -92,3 +96,180 @@ class UpdateProfileInfo(View, LoginRequiredMixin):
 
 class Main(TemplateView):
     template_name = "cart/index.html"
+
+
+def redirect_to(func: Callable):
+    def wrapper(request):
+        cart = func(request)
+        previous_abs_url = request.META.get('HTTP_REFERER')
+        if previous_abs_url:
+            if request.is_ajax():
+                return JsonResponse({"total_sum": cart.get_total_sum(), "cart": json.dumps(cart.cart)})
+            return HttpResponseRedirect(previous_abs_url)
+        return cart.serialize_data()
+
+    return wrapper
+
+
+class MainView(TemplateView):
+    """
+    Главная страница
+    """
+
+    template_name = 'cart/index.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        popular_products = Product.objects.all()[:8]
+
+        context.update(
+            {
+                'popular_products': popular_products
+            },
+        )
+        return context
+
+
+def change_cart(request):
+    if request.method == "GET":
+        product_id = request.GET["product_id"]
+        product = Product.objects.filter(id=product_id).first()
+        if product:
+            with transaction.atomic():
+                delete_from_cart(request)
+                get_data = request.GET.copy()
+                get_data["product_id"] = str(product.id)
+                request.GET = get_data
+                add_to_cart(request)
+        return HttpResponseRedirect("/cart/")
+
+
+@redirect_to
+def add_to_cart(request):
+    if request.method == "GET":
+        product_id = request.GET.get("product_id")
+        if product_id:
+            amount = request.GET.get("amount", False)
+            cart = Cart(request.session)
+            if amount:
+                cart.add(product_id, int(amount))
+            else:
+                cart.add(product_id)
+            return cart
+
+
+def delete_from_cart(request):
+    if request.method == "GET":
+        product_id = request.GET["product_id"]
+        cart = Cart(request.session)
+        cart.__delitem__(product_id)
+        return HttpResponseRedirect("/cart/")
+
+
+@redirect_to
+def remove_from_cart(request):
+    if request.method == "GET":
+        product_id = request.GET["product_id"]
+        cart = Cart(request.session)
+        amount = request.GET.get("amount", False)
+        if amount:
+            cart.remove(product_id, int(amount))
+        else:
+            cart.remove(product_id)
+        return cart
+
+
+class CartView(View):
+    def get(self, request):
+        cart = Cart(request.session)
+        cart_data = cart.serialize_data()
+        return render(
+            request,
+            "cart/cart.html",
+            {"cart": cart_data, "total_price": cart.get_total_sum()}
+        )
+
+
+def no_cart_main_page(function):
+    def wrapper(self, request):
+        cart = Cart(request.session)
+        if cart.cart:
+            return function(self, request)
+        return HttpResponseRedirect("/")
+    return wrapper
+
+
+def no_cart_decorator(cls):
+    def wrapper():
+        for function_name in ["get", "post"]:
+            method = getattr(cls, function_name)
+            new_method = no_cart_main_page(method)
+            setattr(cls, function_name, new_method)
+        return cls
+    return wrapper()
+
+
+# @no_cart_decorator
+# class OrderView(View):
+#
+#     def get(self, request):
+#         cart = Cart(request.session)
+#         cart_data = cart.serialize_data()
+#         return render(request, "cart/order.html", {"cart": cart_data, "total_price": cart.get_total_sum(),
+#                                                    "payment_types": Order.payment_types_choices})
+#
+#     def post(self, request):
+#
+#         cart = Cart(request.session)
+#         request.POST = request.POST.copy()
+#
+#         if request.POST.get("phone"):
+#
+#             request.POST["phone"] = request.POST["phone"].replace("+7", "")
+#             request.POST["phone"] = "".join([sym for sym in request.POST["phone"] if sym.isdigit()])
+#
+#         if not (request.user.is_authenticated and getattr(request.user, "profile", False)):
+#
+#             user_form = UserUpdateForm(request.POST)
+#             profile_form = ProfileForm(request.POST)
+#
+#             if user_form.is_valid() and profile_form.is_valid() or request.user.is_authenticated:
+#                 user, created = User.objects.get_or_create(email=user_form.cleaned_data["email"])
+#                 if created:
+#                     user.set_password(user_form.cleaned_data["password1"])
+#                     user.save()
+#                     profile = Profile.objects.create(user=user, **profile_form.cleaned_data)
+#                 else:
+#                     profile = user.profile
+#             else:
+#                 cart_data = cart.serialize_data()
+#                 user_form.errors.update(profile_form.errors)
+#                 return render(request, "cart/order.html", {"cart": cart_data,
+#                                                            "total_price": cart.get_total_sum(),
+#                                                            "errors": user_form.errors,
+#                                                            "payment_types": Order.payment_types_choices})
+#         else:
+#             profile = request.user.profile
+#         customer, created = Customer.objects.get_or_create(profile=profile)
+#         order_form = OrderForm(request.POST)
+#         if order_form.is_valid():
+#             with transaction.atomic():
+#                 cart_data = cart.cart.copy()
+#                 cart.__delete__()
+#                 s_p_ids = list(map(int, cart_data.keys()))
+#                 order = Order.objects.create(customer=customer, **order_form.cleaned_data)
+#                 order_items = [OrderItem(seller_product=seller_product, order=order,
+#                                          amount=cart_data[str(seller_product.id)]["amount"])
+# <<<<<<< HEAD
+#                                for seller_product in seller_products]
+#                 [order_item.save() for order_item in order_items]
+#             redirect_path = 'payment_self' if order.payment_type == 'cart' else 'payment_someone'
+#             return HttpResponseRedirect(redirect_path, kwargs={'order_id': order.id})
+#         return HttpResponse(order_form.errors, status=500)
+# =======
+#                                for seller_product in SellerProduct.objects.filter(id__in=s_p_ids)]
+#                 for order_item in order_items:
+#                     order_item.save()
+#             return JsonResponse(json.dumps({"message": "Order has added", "status_code": 200}), safe=False)
+#         return JsonResponse(json.dumps({"message": order_form.errors, "status_code": 500}), safe=False)
+# >>>>>>> 96255057d9acb746ff6aeefbf31aee1a5e8b2dff

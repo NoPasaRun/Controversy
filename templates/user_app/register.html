@@ -1,40 +1,20 @@
 {% extends '_base.html' %}
 {% block main %}
-    <div class="container">
+    <div class="container" style="display: flex; justify-content: center">
 
-        <form class="well form-horizontal" method="post"  id="contact_form">
+        <form class="well form-horizontal" method="post" style="width: fit-content; display: flex; flex-direction: column; align-items: center"  id="contact_form">
             {% csrf_token %}
             <fieldset>
 
             <legend><center><h2><b>Registration Form</b></h2></center></legend><br>
 
             <div class="form-group">
-              <label class="col-md-4 control-label">ФИО</label>
+              <label class="col-md-4 control-label">Логин</label>
               <div class="col-md-4 inputGroupContainer">
                   <div class="input-group">
                       <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
-                      <input name="name" placeholder="Введите имя, фамилию, очество (если имеется)" class="form-control"  type="text">
+                      <input name="username" placeholder="Введите имя пользователя" class="form-control"  type="text">
                   </div>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="col-md-4 control-label" >Почта</label>
-                <div class="col-md-4 inputGroupContainer">
-                    <div class="input-group">
-                      <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
-                      <input name="email" placeholder="Введите почту" class="form-control"  type="email">
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-group">
-              <label class="col-md-4 control-label">Аватар</label>
-              <div class="col-md-4 inputGroupContainer">
-                <div class="input-group">
-                    <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
-                    <input  name="avatar" class="form-control"  type="file" accept="image/*">
-                </div>
               </div>
             </div>
 
@@ -53,7 +33,7 @@
                 <div class="col-md-4 inputGroupContainer">
                     <div class="input-group">
                         <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
-                        <input name="password2" placeholder="Введите пароль повторно" class="form-control"  type="password">
+                        <input name="password2" placeholder="Подтвердите пароль" class="form-control"  type="password">
                     </div>
                 </div>
             </div>
@@ -67,28 +47,21 @@
                     </div>
                 </div>
             </div>
-
-            <div class="form-group">
-              <label class="col-md-4 control-label">Дата рождения</label>
-                <div class="col-md-4 inputGroupContainer">
-                    <div class="input-group">
-                        <span class="input-group-addon"><i class="glyphicon glyphicon-earphone"></i></span>
-                        <input name="birth_date" id="date-mask" placeholder="Введите дату рождения" class="form-control" type="text">
-                    </div>
-                </div>
+            <div style="display: flex; flex-direction: column; gap: 7px; margin: 15px 0;">
+                {% for error in errors %}
+                    <span style="color: #222">{{ error }}</span>
+                {%  endfor %}
             </div>
-
             <div class="form-group">
               <label class="col-md-4 control-label"></label>
-              <div class="col-md-4"><br>
-                &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<button id="submit" type="submit" class="btn btn-warning" >&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspSUBMIT <span class="glyphicon glyphicon-send"></span>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</button>
+              <div class="col-md-4" style="text-align: center"><br>
+                <button id="submit" type="submit" class="btn btn-warning" >SUBMIT<span class="glyphicon glyphicon-send"></span></button>
               </div>
             </div>
 
         </fieldset>
         </form>
         </div>
-        {{ errors }}
     </div><!-- /.container -->
     <script src="https://unpkg.com/imask"></script>
     <script>
