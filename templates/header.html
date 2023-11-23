@@ -61,12 +61,6 @@
         </nav>
         <div class="row-block">
           <div class="CartBlock">
-              <a class="CartBlock-block" href="{% url 'catalog:products_compare' %}">
-                <img class="CartBlock-img" src="{% static 'assets/img/icons/exchange.svg' %}" alt="exchange.svg"/>
-                <span id="compare-count-block" class="CartBlock-amount">
-                  {{  product_compare_list.count_prods_in_compare_list }}
-                </span>
-              </a>
               <a class="CartBlock-block" href="/cart/">
                 <img class="CartBlock-img" src="{% static 'assets/img/icons/cart.svg' %}" alt="cart.svg"/>
                 <span class="CartBlock-amount">{{ request.session.cart|length }}</span>
