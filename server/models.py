@@ -1,4 +1,4 @@
-import re
+import uuid
 
 from django.db import models 
 from django.contrib.auth.models import AbstractUser 
@@ -77,8 +77,9 @@ class Product(models.Model):
     ) 
     uuid = models.UUIDField( 
         verbose_name='Код товара', 
-        unique=True, 
-        auto_created=True 
+        default=uuid.uuid4, 
+        editable=False, 
+        unique=True
     ) 
     sizes = models.ManyToManyField( 
         verbose_name='Доступные размеры',
