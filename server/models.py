@@ -1,3 +1,5 @@
+import re
+
 from django.db import models 
 from django.contrib.auth.models import AbstractUser 
 from django.core.validators import RegexValidator 
@@ -30,7 +32,25 @@ class Size(models.Model):
  
     @property 
     def name(self): 
-        return 'Smth.' 
+        match str(self.number):
+            case '38':
+                return 'XXS'
+            case '40':
+                return 'XS'
+            case '42':
+                return 'S'
+            case size if re.match(r"[44-46]"):
+                return 'M'
+            case size if re.match(r"[48-50]"):
+                return 'L'
+            case '52':
+                return 'XL'
+            case size if re.match(r"[54-56]"):
+                return 'XXL'
+            case '58':
+                return '3XL'
+            case _:
+                return 'Размер не подходит под Американские стандарты'
      
     def __str__(self): 
         return str(self.number) 
