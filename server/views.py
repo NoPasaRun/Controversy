@@ -3,4 +3,4 @@ from django.views.generic import TemplateView
 
 
 class Main(TemplateView):
-    template_name = "_base.html"
+    template_name = "cart/index.html"
