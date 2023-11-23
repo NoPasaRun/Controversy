@@ -65,6 +65,9 @@ class Product(models.Model):
         verbose_name='Название', 
         max_length=32 
     ) 
+    price = models.PositiveSmallIntegerField(
+        verbose_name='Цена'
+    )
     image = models.FileField( 
         verbose_name='Изображение', 
         upload_to='images' 
