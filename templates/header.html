@@ -27,8 +27,6 @@
                 <img class="CartBlock-img" src="{% static 'assets/img/icons/cart.svg' %}" alt="cart.svg"/>
                 <span class="CartBlock-amount">{{ request.session.cart|length }}</span>
               </a>
-            <div class="CartBlock-block"><span class="CartBlock-price">{{ cart_total_price|default:'0.00' }}$</span>
-            </div>
           </div>
         </div>
         <div class="row-block Header-trigger"><a class="menuTrigger" href="#navigate">

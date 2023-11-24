@@ -23,7 +23,6 @@ window.addEventListener("load", function() {
                     headers: {'X-Requested-With': 'XMLHttpRequest'},
                     success: function (data) {
                         document.querySelector(".Total-price").innerText = data["total_sum"] + '$';
-                        document.querySelector(".CartBlock-price").innerText = data["total_sum"] + '$';
                         for (id in data["prices"]) {
                             document.querySelector(`#Price-${id}`).innerText = data["prices"][id];
                         }

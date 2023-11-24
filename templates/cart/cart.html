@@ -49,7 +49,7 @@
                   <div class="Cart-amount">
                     <div class="Amount">
                       <button class="Amount-remove" type="button"></button>
-                      <input class="Amount-input form-input" name="amount" id="{{ product.id }}" type="number" value="{{ product.quantity }}"/>
+                      <input class="Amount-input form-input" name="amount" id="{{ product.id }}" type="number" value="{{ product.amount }}"/>
                       <button class="Amount-add" type="button"></button>
                     </div>
                   </div>
@@ -62,7 +62,7 @@
           <div class="Cart-total">
             <div class="Cart-block Cart-block_total">
               <strong class="Cart-title" id="y">Итого:</strong>
-              <span class="Cart-price Total-price">{{ cart_total_price }}$</span>
+              <span class="Cart-price Total-price">{{ total_price }}$</span>
             </div>
             <div class="Cart-block"><a class="btn btn_success btn_lg" href="/order/">Оформить заказ</a>
             </div>

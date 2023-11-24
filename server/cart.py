@@ -74,7 +74,6 @@ class Cart:
             updated_info["id"] = product.id
             updated_info["image"] = product.image
             updated_info["price"] = product.price
-            updated_info["quantity"] = product.quantity
             updated_info["title"] = product.title
             updated_info["description"] = product.description
             data.append(updated_info)

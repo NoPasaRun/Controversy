@@ -92,16 +92,23 @@
               <div class="form-group">
                 <div>
                   <label class="toggle">
-                    <input type="radio" name="delivery_type" value="ordinary" checked="checked"
+                    <input type="radio" name="delivery_type" value="express" checked="checked"
+                    onchange="change_info_value(this)" onload="change_info_value(this)"/>
+                    <span class="toggle-box"></span><span class="toggle-text">Быстрая доставка</span>
+                  </label>
+                </div>
+                <div>
+                  <label class="toggle">
+                    <input type="radio" name="delivery_type" value="default"
                     onchange="change_info_value(this)" onload="change_info_value(this)"/>
                     <span class="toggle-box"></span><span class="toggle-text">Обычная доставка</span>
                   </label>
                 </div>
                 <div>
                   <label class="toggle">
-                    <input type="radio" name="delivery_type" value="express"
+                    <input type="radio" name="delivery_type" value="issue_point"
                     onchange="change_info_value(this)" onload="change_info_value(this)"/>
-                    <span class="toggle-box"></span><span class="toggle-text">Экспресс доставка</span>
+                    <span class="toggle-box"></span><span class="toggle-text">На пункте выдачи</span>
                   </label>
                 </div>
               </div>
@@ -149,26 +156,6 @@
                 <div class="Order-personal">
                   <div class="row">
                     <div class="row-block">
-                      <div class="Order-info">
-                        <div class="Order-infoType">ФИО:
-                        </div>
-                        <div class="Order-infoContent" id="name_info">
-                        </div>
-                      </div>
-                      <div class="Order-info">
-                        <div class="Order-infoType">Телефон:
-                        </div>
-                        <div class="Order-infoContent" id="phone_info">
-                        </div>
-                      </div>
-                      <div class="Order-info">
-                        <div class="Order-infoType">E-mail:
-                        </div>
-                        <div class="Order-infoContent" id="email_info">
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row-block">
                       <div class="Order-info Order-info_delivery">
                         <div class="Order-infoType">Тип доставки:
                         </div>
@@ -197,28 +184,22 @@
                   </div>
                 </div>
                 <div class="Cart Cart_order">
-                  {% for seller_product in cart %}
+                  {% for product in cart %}
                       <div class="Cart-product">
                         <div class="Cart-block Cart-block_row">
-                          <div class="Cart-block Cart-block_pict"><a class="Cart-pict" href="#"><img class="Cart-img" src="/media/{{ seller_product.product_image }}/" alt="card.jpg"/></a>
+                          <div class="Cart-block Cart-block_pict"><a class="Cart-pict" href="#"><img class="Cart-img" src="/media/{{ product.image }}/" alt="card.jpg"/></a>
                           </div>
-                          <div class="Cart-block Cart-block_info"><a class="Cart-title" href="#">{{ seller_product.product_name }}</a>
-                            <div class="Cart-desc">{{ seller_product.product_description }}
+                          <div class="Cart-block Cart-block_info"><a class="Cart-title" href="#">{{ product.title }}</a>
+                            <div class="Cart-desc">{{ product.description }}
                             </div>
                           </div>
                           <div class="Cart-block Cart-block_price">
-                            <div class="Cart-price">{{ seller_product.price }}$
+                            <div class="Cart-price">{{ product.price }}$
                             </div>
                           </div>
                         </div>
                         <div class="Cart-block Cart-block_row">
-                          <div class="Cart-block Cart-block_seller">
-                            <div>Продавец:
-                            </div>
-                            <div>{{ seller_product.seller }}
-                            </div>
-                          </div>
-                          <div class="Cart-block Cart-block_amount">{{ seller_product.amount }} шт.
+                          <div class="Cart-block Cart-block_amount">{{ product.amount }} шт.
                           </div>
                         </div>
                       </div>
@@ -226,7 +207,7 @@
                   <div class="Cart-total">
                     <div class="Cart-block Cart-block_total">
                       <strong class="Cart-title">Итого:
-                      </strong><span class="Cart-price">{{ total_price }}$</span><span class="Cart-price_old">{{ total_price }}$</span>
+                      </strong><span class="Cart-price">{{ total_price }}$</span>
                     </div>
                     <div class="Cart-block">
                       <button class="btn btn_primary btn_lg" type="submit">Оплатить

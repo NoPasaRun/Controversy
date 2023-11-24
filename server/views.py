@@ -91,7 +91,7 @@ class UpdateProfileInfo(View, LoginRequiredMixin):
                           "errors": user_form.errors,
                           "is_authenticated_by_email": is_authenticated_by_email
                       }
-        )
+                      )
 
 
 class Main(TemplateView):
@@ -149,15 +149,12 @@ def change_cart(request):
 @redirect_to
 def add_to_cart(request):
     if request.method == "GET":
+        cart = Cart(request.session)
         product_id = request.GET.get("product_id")
         if product_id:
-            amount = request.GET.get("amount", False)
-            cart = Cart(request.session)
-            if amount:
-                cart.add(product_id, int(amount))
-            else:
-                cart.add(product_id)
-            return cart
+            amount = request.GET.get("amount", 1)
+            cart.add(product_id, int(amount))
+        return cart
 
 
 def delete_from_cart(request):
@@ -171,13 +168,11 @@ def delete_from_cart(request):
 @redirect_to
 def remove_from_cart(request):
     if request.method == "GET":
-        product_id = request.GET["product_id"]
         cart = Cart(request.session)
-        amount = request.GET.get("amount", False)
-        if amount:
-            cart.remove(product_id, int(amount))
-        else:
-            cart.remove(product_id)
+        product_id = request.GET.get("product_id")
+        if product_id:
+            amount = request.GET.get("amount", -1)
+            cart.add(product_id, int(amount))
         return cart
 
 
@@ -198,6 +193,7 @@ def no_cart_main_page(function):
         if cart.cart:
             return function(self, request)
         return HttpResponseRedirect("/")
+
     return wrapper
 
 
@@ -208,6 +204,7 @@ def no_cart_decorator(cls):
             new_method = no_cart_main_page(method)
             setattr(cls, function_name, new_method)
         return cls
+
     return wrapper()
 
 
@@ -220,7 +217,7 @@ class OrderView(View):
         return render(
             request, "cart/order.html",
             {"cart": cart_data, "total_price": cart.get_total_sum(),
-            "payment_types": Order.PAYMENT_TYPES}
+             "payment_types": Order.PAYMENT_TYPES}
         )
 
     def post(self, request):
@@ -230,13 +227,12 @@ class OrderView(View):
         user = request.user
 
         if request.POST.get("phone"):
-
             request.POST["phone"] = request.POST["phone"].replace("+7", "")
             request.POST["phone"] = "".join([sym for sym in request.POST["phone"] if sym.isdigit()])
 
-        if not user.is_authenticated:
+        if not User.objects.filter(username=request.POST.get("username")) or not user.is_authenticated:
 
-            user_form = UserUpdateForm(request.POST)
+            user_form = UserForm(request.POST)
 
             if user_form.is_valid():
                 user, created = User.objects.get_or_create(username=user_form.cleaned_data["username"])
@@ -253,8 +249,9 @@ class OrderView(View):
         if order_form.is_valid():
             with transaction.atomic():
                 order = Order.objects.create(user=user, **order_form.cleaned_data)
-                order.products.add(Product.objects.filter(id__in=[_id for _id in cart.cart]))
+                for product in Product.objects.filter(id__in=[int(_id) for _id in cart.cart]):
+                    order.products.add(product)
                 cart.__delete__()
-            redirect_path = 'payment_self' if order.payment_type == 'cart' else 'payment_someone'
-            return HttpResponseRedirect(redirect_path, kwargs={'order_id': order.id})
+            redirect_path = '/payment/self' if order.payment_type == 'cart' else '/payment/someone'
+            return HttpResponseRedirect(redirect_path)
         return HttpResponse(order_form.errors, status=500)

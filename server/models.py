@@ -112,15 +112,14 @@ class Order(models.Model):
     ) 
     PAYMENT_TYPES = ( 
         ('cash', 'наличными'), 
-        ('card', 'картой'), 
-        ('anal', 'очком понеделки') 
+        ('card', 'картой')
     ) 
     STATUSES = ( 
         ('paid', 'оплачено'), 
-        ('packed', 'упаковано (ебало понеделки)'), 
+        ('packed', 'упаковано'),
         ('on_the_way', 'в пути'), 
-        ('delivered', 'доставлено (как двоечка в бороду понеделки)'), 
-        ('waiting', 'ожидает в пункте выдачи (по ебалу понеделке)') 
+        ('delivered', 'доставлено'),
+        ('waiting', 'ожидает в пункте выдачи')
     ) 
  
     delivery_type = models.CharField( 
@@ -137,6 +136,16 @@ class Order(models.Model):
         verbose_name='Статус заказа', 
         choices=STATUSES, 
         max_length=44 
+    )
+    city = models.CharField(
+        verbose_name='Город',
+        max_length=64,
+        blank=True
+    )
+    address = models.CharField(
+        verbose_name='Адрес',
+        max_length=128,
+        blank=True
     )
     products = models.ManyToManyField(
         Product,

@@ -10,7 +10,7 @@ class OrderForm(forms.ModelForm):
 
     class Meta:
         model = Order
-        exclude = ["user",]
+        exclude = ["user", "products", "status"]
         fields = "__all__"
 
 
