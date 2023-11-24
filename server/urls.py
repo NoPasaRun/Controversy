@@ -6,7 +6,7 @@ from server.views import Main, AccountView, LogIn, LogOut, SignUp, UpdateProfile
 urlpatterns = [
     path("", Main.as_view(), name="index"),
     path("account/", AccountView.as_view(), name="account"),
-    path("account/login/", LogIn.as_view(), name="login"),
+    path("accounts/login/", LogIn.as_view(), name="login"),
     path("account/logout/", LogOut.as_view(), name="logout"),
     path("account/register/", SignUp.as_view(), name="sign-up"),
     path("account/profile/", UpdateProfileInfo.as_view(), name="profile"),

@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-ua(2spoq*r$wgo*7x0z^f&%#7xqlss9!9u*b0zb+ti)mz%fwnc
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["my-health.site"]
+ALLOWED_HOSTS = ["*", "my-health.site"]
 INTERNAL_IPS = ALLOWED_HOSTS
 
 CSRF_TRUSTED_ORIGINS = ["https://my-health.site"]
@@ -141,3 +141,4 @@ MEDIA_ROOT = BASE_DIR / "media"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+LOGIN_REDIRECT_URL = "account/login"

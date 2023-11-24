@@ -237,10 +237,9 @@ class OrderView(View):
             if user_form.is_valid():
                 user, created = User.objects.get_or_create(username=user_form.cleaned_data["username"])
                 if created:
-                    user.set_password(user_form.cleaned_data["password1"])
+                    password = user_form.cleaned_data["password1"]
+                    user.set_password(password)
                     user.save()
-                    auth_user = authenticate(user=user, password=user_form.cleaned_data["password1"])
-                    login(request=request, user=auth_user)
             else:
                 cart_data = cart.serialize_data()
                 return render(request, "cart/order.html", {"cart": cart_data,
