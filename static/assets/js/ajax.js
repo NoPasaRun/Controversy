@@ -24,11 +24,6 @@ window.addEventListener("load", function() {
                     success: function (data) {
                         document.querySelector(".Total-price").innerText = data["total_sum"] + '$';
                         document.querySelector(".CartBlock-price").innerText = data["total_sum"] + '$';
-                        let old_total_sum = '';
-                        if (data["total_sum"] != data["old_total_sum"]) {
-                            old_total_sum = data["old_total_sum"] + '$';
-                        }
-                        document.querySelector(".Cart-price_old").innerText = old_total_sum;
                         for (id in data["prices"]) {
                             document.querySelector(`#Price-${id}`).innerText = data["prices"][id];
                         }
@@ -52,7 +47,7 @@ window.addEventListener("load", function() {
 
         function change_values() {
             let num = input.val()-input.attr("value")
-            data = {"url": "/add_to_cart/?seller_product_id=" + input.attr("id"),
+            data = {"url": "/add_to_cart/?product_id=" + input.attr("id"),
             "amount": num}
             update_time = 150
             update = true

@@ -8,12 +8,12 @@ from django.views.generic import TemplateView
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.views import View
 
-from server.models import User, Product
-from server.forms import UserUpdateForm, UserForm
+from server.models import User, Product, Order
+from server.forms import UserUpdateForm, UserForm, OrderForm
 from server.cart import Cart
 
 
@@ -97,13 +97,15 @@ class UpdateProfileInfo(View, LoginRequiredMixin):
 class Main(TemplateView):
     template_name = "cart/index.html"
 
+    extra_context = {"products": Product.objects.all()}
+
 
 def redirect_to(func: Callable):
     def wrapper(request):
         cart = func(request)
         previous_abs_url = request.META.get('HTTP_REFERER')
         if previous_abs_url:
-            if request.is_ajax():
+            if request.headers.get('x-requested-with'):
                 return JsonResponse({"total_sum": cart.get_total_sum(), "cart": json.dumps(cart.cart)})
             return HttpResponseRedirect(previous_abs_url)
         return cart.serialize_data()
@@ -209,67 +211,50 @@ def no_cart_decorator(cls):
     return wrapper()
 
 
-# @no_cart_decorator
-# class OrderView(View):
-#
-#     def get(self, request):
-#         cart = Cart(request.session)
-#         cart_data = cart.serialize_data()
-#         return render(request, "cart/order.html", {"cart": cart_data, "total_price": cart.get_total_sum(),
-#                                                    "payment_types": Order.payment_types_choices})
-#
-#     def post(self, request):
-#
-#         cart = Cart(request.session)
-#         request.POST = request.POST.copy()
-#
-#         if request.POST.get("phone"):
-#
-#             request.POST["phone"] = request.POST["phone"].replace("+7", "")
-#             request.POST["phone"] = "".join([sym for sym in request.POST["phone"] if sym.isdigit()])
-#
-#         if not (request.user.is_authenticated and getattr(request.user, "profile", False)):
-#
-#             user_form = UserUpdateForm(request.POST)
-#             profile_form = ProfileForm(request.POST)
-#
-#             if user_form.is_valid() and profile_form.is_valid() or request.user.is_authenticated:
-#                 user, created = User.objects.get_or_create(email=user_form.cleaned_data["email"])
-#                 if created:
-#                     user.set_password(user_form.cleaned_data["password1"])
-#                     user.save()
-#                     profile = Profile.objects.create(user=user, **profile_form.cleaned_data)
-#                 else:
-#                     profile = user.profile
-#             else:
-#                 cart_data = cart.serialize_data()
-#                 user_form.errors.update(profile_form.errors)
-#                 return render(request, "cart/order.html", {"cart": cart_data,
-#                                                            "total_price": cart.get_total_sum(),
-#                                                            "errors": user_form.errors,
-#                                                            "payment_types": Order.payment_types_choices})
-#         else:
-#             profile = request.user.profile
-#         customer, created = Customer.objects.get_or_create(profile=profile)
-#         order_form = OrderForm(request.POST)
-#         if order_form.is_valid():
-#             with transaction.atomic():
-#                 cart_data = cart.cart.copy()
-#                 cart.__delete__()
-#                 s_p_ids = list(map(int, cart_data.keys()))
-#                 order = Order.objects.create(customer=customer, **order_form.cleaned_data)
-#                 order_items = [OrderItem(seller_product=seller_product, order=order,
-#                                          amount=cart_data[str(seller_product.id)]["amount"])
-# <<<<<<< HEAD
-#                                for seller_product in seller_products]
-#                 [order_item.save() for order_item in order_items]
-#             redirect_path = 'payment_self' if order.payment_type == 'cart' else 'payment_someone'
-#             return HttpResponseRedirect(redirect_path, kwargs={'order_id': order.id})
-#         return HttpResponse(order_form.errors, status=500)
-# =======
-#                                for seller_product in SellerProduct.objects.filter(id__in=s_p_ids)]
-#                 for order_item in order_items:
-#                     order_item.save()
-#             return JsonResponse(json.dumps({"message": "Order has added", "status_code": 200}), safe=False)
-#         return JsonResponse(json.dumps({"message": order_form.errors, "status_code": 500}), safe=False)
-# >>>>>>> 96255057d9acb746ff6aeefbf31aee1a5e8b2dff
+@no_cart_decorator
+class OrderView(View):
+
+    def get(self, request):
+        cart = Cart(request.session)
+        cart_data = cart.serialize_data()
+        return render(
+            request, "cart/order.html",
+            {"cart": cart_data, "total_price": cart.get_total_sum(),
+            "payment_types": Order.PAYMENT_TYPES}
+        )
+
+    def post(self, request):
+
+        cart = Cart(request.session)
+        request.POST = request.POST.copy()
+        user = request.user
+
+        if request.POST.get("phone"):
+
+            request.POST["phone"] = request.POST["phone"].replace("+7", "")
+            request.POST["phone"] = "".join([sym for sym in request.POST["phone"] if sym.isdigit()])
+
+        if not user.is_authenticated:
+
+            user_form = UserUpdateForm(request.POST)
+
+            if user_form.is_valid():
+                user, created = User.objects.get_or_create(username=user_form.cleaned_data["username"])
+                if created:
+                    user.set_password(user_form.cleaned_data["password1"])
+                    user.save()
+            else:
+                cart_data = cart.serialize_data()
+                return render(request, "cart/order.html", {"cart": cart_data,
+                                                           "total_price": cart.get_total_sum(),
+                                                           "errors": user_form.errors,
+                                                           "payment_types": Order.PAYMENT_TYPES})
+        order_form = OrderForm(request.POST)
+        if order_form.is_valid():
+            with transaction.atomic():
+                order = Order.objects.create(user=user, **order_form.cleaned_data)
+                order.products.add(Product.objects.filter(id__in=[_id for _id in cart.cart]))
+                cart.__delete__()
+            redirect_path = 'payment_self' if order.payment_type == 'cart' else 'payment_someone'
+            return HttpResponseRedirect(redirect_path, kwargs={'order_id': order.id})
+        return HttpResponse(order_form.errors, status=500)

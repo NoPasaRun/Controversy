@@ -69,9 +69,14 @@ class Cart:
 
     def serialize_data(self) -> List:
         data = []
-        for product in Product.objects.all():
+        for product in Product.objects.filter(id__in=[_id for _id in self.cart]):
             updated_info = self.cart[str(product.id)].copy()
             updated_info["id"] = product.id
+            updated_info["image"] = product.image
+            updated_info["price"] = product.price
+            updated_info["quantity"] = product.quantity
+            updated_info["title"] = product.title
+            updated_info["description"] = product.description
             data.append(updated_info)
         return data
 
@@ -88,3 +93,7 @@ class Cart:
                     product.quantity += product_info["amount"]
                     self.cart.pop(str(product_id))
             self.save(product)
+
+    def __delete__(self):
+        self.session.pop(settings.CART_SESSION_ID)
+        self.session.save()

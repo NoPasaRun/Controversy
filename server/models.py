@@ -137,7 +137,12 @@ class Order(models.Model):
         verbose_name='Статус заказа', 
         choices=STATUSES, 
         max_length=44 
-    ) 
+    )
+    products = models.ManyToManyField(
+        Product,
+        related_query_name="orders",
+        verbose_name="Товары"
+    )
  
     def __str__(self): 
         return str(self.id) 

@@ -10,7 +10,7 @@
             </h2>
           </header>
           <div class="Cards">
-            {% for seller_product in products %}
+            {% for product in products %}
               {% include 'card.html' %}
             {% endfor %}
           </div>
@@ -30,7 +30,7 @@
               </div>
             </header>
             <div class="Slider-box Cards Cards_hz">
-              {% for seller_product in products %}
+              {% for product in products %}
                 <div class="Slider-item">
                   <div class="Slider-content">
                     {% include 'card.html' %}
