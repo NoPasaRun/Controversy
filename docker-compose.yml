@@ -9,7 +9,7 @@ services:
     ports:
       - "8000:8000"
   nginx:
-    build: .
+    build: ./nginx
     ports:
       - "80:80"
       - "443:443"
