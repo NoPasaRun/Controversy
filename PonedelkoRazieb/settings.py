@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ua(2spoq*r$wgo*7x0z^f&%#7xqlss9!9u*b0zb+ti)mz%fwnc'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["my-health.site"]
 INTERNAL_IPS = ALLOWED_HOSTS
